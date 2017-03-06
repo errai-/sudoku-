@@ -10,14 +10,12 @@ bool SudokuHandle::add(string file)
         std::regex numbers("[0-9]{9}");
         // Loop over sudokus
         while (getline(reading,line)) {
-            cout << line << endl;
             if (!std::regex_match(line,header))
                 return false;
             Sudoku newSud(line);
             // Loop over sudoku lines
             for (int i=0; i<9; ++i) {
                 getline(reading,line);
-                cout << " " << line << endl;
                 if (!std::regex_match(line,numbers))
                     return false;
                 newSud.readLine(line);

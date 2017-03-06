@@ -74,6 +74,12 @@ void Sudoku::setValue(unsigned int row, unsigned int col, int number)
     if (number>0) {
         mVals.set(pos);
         mVals.set(pos+number);
+        elimRow(row,number);
+        elimCol(row,number);
+        elimBlk(row,col,number);
+    } else {
+        for (int i=1; i<=9; ++i)
+            mVals.set(pos+i);
     }
 }
 
@@ -81,12 +87,52 @@ void Sudoku::setValue(unsigned int row, unsigned int col, int number)
 
 bool Sudoku::checkRows()
 {
-    return false;
+    bool success=false;
+    for (unsigned row=0; row<9; ++row) {
+        for (unsigned nro=1; nro<=9; ++nro) {
+            if (mRows.test(9*row+nro-1))
+                continue;
+            int counter=0;
+            unsigned rCol=0;
+            for (unsigned col=0; col<9; ++col) {
+                unsigned pos=position(row,col)+nro;
+                if (mVals.test(pos)) {
+                    ++counter;
+                    rCol=col;
+                }
+            }
+            if (counter==1) {
+                setValue(row,rCol,nro);
+                success=true;
+            }
+        }
+    }
+    return success;
 }
 
 bool Sudoku::checkCols()
 {
-    return false;
+    bool success=false;
+    for (unsigned col=0; col<9; ++col) {
+        for (unsigned nro=1; nro<=9; ++nro) {
+            if (mCols.test(9*col+nro-1))
+                continue;
+            int counter=0;
+            unsigned rRow=0;
+            for (unsigned row=0; row<9; ++row) {
+                unsigned pos=position(row,col)+nro;
+                if (mVals.test(pos)) {
+                    ++counter;
+                    rRow=row;
+                }
+            }
+            if (counter==1) {
+                setValue(rRow,col,nro);
+                success=true;
+            }
+        }
+    }
+    return success;
 }
 
 bool Sudoku::checkBlks()
@@ -103,10 +149,31 @@ bool Sudoku::checkCells()
 
 void Sudoku::elimRow(unsigned int row, int number)
 {
+    if (row>8 || number<1 || number>9)
+        throw std::runtime_error("Erroneous value! (Sudoku::elimRow)");
+    unsigned rpos = 9*row+number-1;
+    if (mRows.test(rpos))
+        throw std::runtime_error("This value was already set! (Sudoku::elimRow)");
+    mRows.set(rpos);
+    for (unsigned pos=90*row; pos<90*(row+1); pos+=10) {
+        if (!mVals.test(pos)) {
+            mVals.reset(pos+number);
+        }
+    }
 }
 
 void Sudoku::elimCol(unsigned int col, int number)
 {
+    if (col>8 || number<1 || number>9)
+        throw std::runtime_error("Erroneous value! (Sudoku::elimCol)");
+    unsigned cpos = 9*col+number-1;
+    if (mCols.test(cpos))
+        throw std::runtime_error("This value was already set! (Sudoku::elimCol)");
+    mCols.set(cpos);
+    for (unsigned pos = 10*col; pos<810; pos+=90) {
+        if (!mVals.test(pos))
+            mVals.reset(pos+number);
+    }
 }
 
 void Sudoku::elimBlk(unsigned int row, unsigned int col, int number)
@@ -117,24 +184,44 @@ void Sudoku::elimBlk(unsigned int row, unsigned int col, int number)
 
 bool Sudoku::rowsToBlks()
 {
+    return false;
 }
 
 bool Sudoku::colsToBlks()
 {
+    return false;
 }
 
 // Checking: from blocks
 
 bool Sudoku::blksToRows()
 {
+    return false;
 }
 
 bool Sudoku::blksToCols()
 {
+    return false;
 }
 
 // Finalization
 
 bool Sudoku::finished()
 {
+    if (mRows.all() && mCols.all() && mBlks.all())
+        return true;
+    return false;
+}
+
+// Appending blk ranges
+
+void Sudoku::blkRange(unsigned int blkRow, unsigned int blkCol)
+{
+    vector<unsigned> blkRange;
+    for (unsigned rowPos=3*blkRow; rowPos<3*blkRow+3; ++rowPos) {
+        for (unsigned colPos=3*blkCol; colPos<3*blkCol+3); ++colPos) {
+            blkRange.push_back(position(rowPos,colPos));
+        }
+    }
+    mBlkRanges.push_back(blkRange);
 }
