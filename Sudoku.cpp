@@ -13,7 +13,7 @@ void Sudoku::print()
 bool Sudoku::readLine(string line)
 {
     if (mLines>8)
-        throw std::runtime_error("Too many sudoku lines to be read!");
+        throw std::runtime_error("Too many sudoku lines to be read! (Sudoku::readLine)");
     if (line.length()!=9)
         throw std::runtime_error("Wrong line length! (Sudoku::readLine)");
     
@@ -28,8 +28,20 @@ bool Sudoku::readLine(string line)
 bool Sudoku::solve()
 {
     if (mLines!=9)
-        throw std::runtime_error("");
-    return true;
+        throw std::runtime_error("An incorrect number of lines spotted! (Sudoku::solve)");
+    
+    bool change = true;
+    while (change) {
+        change = (checkCells() || checkRows() || checkCols() || checkBlks());
+        if (change) continue;
+        change = (rowsToBlks() || colsToBlks());
+        if (change) continue;
+        change = (blksToRows() || blksToCols());
+    }
+    
+    if (finished())
+        return true;
+    return false;
 }
 
 inline unsigned Sudoku::position(unsigned int row, unsigned int col)
@@ -55,10 +67,74 @@ inline int Sudoku::value(unsigned row, unsigned col)
 void Sudoku::setValue(unsigned int row, unsigned int col, int number)
 {
     unsigned pos = position(row,col);
-    if (number<1 || number>9)
+    if (number<0 || number>9)
         throw std::runtime_error("Problematic value offered! (Sudoku::setValue)");
     if (mVals.test(pos))
         throw std::runtime_error("Cell value already set! (Sudoku::setValue)");
-    mVals.set(pos);
-    mVals.set(pos+number);
+    if (number>0) {
+        mVals.set(pos);
+        mVals.set(pos+number);
+    }
+}
+
+// Checking functions:
+
+bool Sudoku::checkRows()
+{
+    return false;
+}
+
+bool Sudoku::checkCols()
+{
+    return false;
+}
+
+bool Sudoku::checkBlks()
+{
+    return false;
+}
+
+bool Sudoku::checkCells()
+{
+    return false;
+}
+
+// Elimination functions:
+
+void Sudoku::elimRow(unsigned int row, int number)
+{
+}
+
+void Sudoku::elimCol(unsigned int col, int number)
+{
+}
+
+void Sudoku::elimBlk(unsigned int row, unsigned int col, int number)
+{
+}
+
+// Checking: to blocks
+
+bool Sudoku::rowsToBlks()
+{
+}
+
+bool Sudoku::colsToBlks()
+{
+}
+
+// Checking: from blocks
+
+bool Sudoku::blksToRows()
+{
+}
+
+bool Sudoku::blksToCols()
+{
+}
+
+// Finalization
+
+bool Sudoku::finished()
+{
 }

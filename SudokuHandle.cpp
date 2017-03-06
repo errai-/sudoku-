@@ -20,6 +20,7 @@ bool SudokuHandle::add(string file)
                 cout << " " << line << endl;
                 if (!std::regex_match(line,numbers))
                     return false;
+                newSud.readLine(line);
             }
             mSudokus.push_back(newSud);
         }

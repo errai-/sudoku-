@@ -23,7 +23,7 @@ int main(void) {
         handle.loop(3);
         return 0;
     } catch(exception &e) {
-        cout << "An error occurred: " << e.what() << endl;
+        cout << endl << endl << "An error occurred: " << e.what() << endl;
         return 1;
     }
 }

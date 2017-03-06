@@ -22,12 +22,27 @@ using std::bitset;
 class Sudoku {
 private:
     bitset<810> mVals;
+    bitset<81> mRows;
+    bitset<81> mCols;
+    bitset<81> mBlks;
     string mName;
     int mLines;
 
     unsigned position(unsigned row, unsigned col);
     int value(unsigned row, unsigned col);
     void setValue(unsigned row, unsigned col, int number);
+    void elimRow(unsigned row, int number);
+    void elimCol(unsigned col, int number);
+    void elimBlk(unsigned row, unsigned col, int number);
+    bool checkCells();
+    bool checkRows();
+    bool checkCols();
+    bool checkBlks();
+    bool rowsToBlks();
+    bool colsToBlks();
+    bool blksToCols();
+    bool blksToRows();
+    bool finished();
     
 public:
     Sudoku(string name) : mName(name), mLines(0) {}
