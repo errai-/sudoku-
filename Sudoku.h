@@ -17,6 +17,7 @@ using std::string;
 using std::exception;
 using std::ifstream;
 using std::bitset;
+using std::pair;
 
 
 class Sudoku {
@@ -27,11 +28,11 @@ private:
     bitset<81> mBlks;
     string mName;
     int mLines;
-    vector< vector<unsigned> > mBlkRanges;
 
     unsigned position(unsigned row, unsigned col);
     int value(unsigned row, unsigned col);
     void setValue(unsigned row, unsigned col, int number);
+    pair<unsigned,unsigned> pos2rowcol(unsigned position);
     void elimRow(unsigned row, int number);
     void elimCol(unsigned col, int number);
     void elimBlk(unsigned row, unsigned col, int number);
@@ -44,16 +45,13 @@ private:
     bool blksToCols();
     bool blksToRows();
     bool finished();
-    void blkRange(unsigned blkRow, unsigned blkCol);
+    vector<unsigned> blkRange(unsigned blkRow, unsigned blkCol);
+    void numStatus(int number);
     
 public:
-    Sudoku(string name) : mName(name), mLines(0) {
-        for (unsigned blkRow=0; blkRow<3; ++blkRow) {
-            for (unsigned blkCol=0; blkCol<3; ++blkCol) {
-                blkRange(blkRow, blkCol);
-            }
-        }
-    }
+    Sudoku(string name) : mName(name), mLines(0) {}
+    
+    ~Sudoku() {}
     
     bool readLine(string line);
 
