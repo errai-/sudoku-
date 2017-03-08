@@ -42,16 +42,18 @@ private:
     bool checkBlks();
     bool rowsToBlks();
     bool colsToBlks();
-    bool blksToCols();
-    bool blksToRows();
+    bool blksToRowsCols();
     bool finished();
     vector<unsigned> blkRange(unsigned blkRow, unsigned blkCol);
     void numStatus(int number);
+    void possible(unsigned row,unsigned col);
     
 public:
     Sudoku(string name) : mName(name), mLines(0) {}
     
     ~Sudoku() {}
+    
+    void init();
     
     bool readLine(string line);
 
@@ -60,6 +62,8 @@ public:
     bool solve();
     
     string getName() { return mName; }
+    
+    unsigned counter();
 };
 
 #endif // SUDOKU

@@ -1,5 +1,16 @@
 #include "Sudoku.h"
 
+void Sudoku::init()
+{
+    for (unsigned row=0; row<9; ++row) {
+        for (unsigned col=0; col<9; ++col) {
+            for (unsigned nro=1; nro<=9; ++nro) {
+                mVals.set(position(row,col)+nro);
+            }
+        }
+    }
+}
+
 void Sudoku::print()
 {
     for (unsigned row=0; row<9; ++row) {
@@ -37,7 +48,7 @@ bool Sudoku::solve()
         if (change) continue;
         change = (rowsToBlks() || colsToBlks());
         if (change) continue;
-        change = (blksToRows() || blksToCols());
+        change = (blksToRowsCols());
     }
     
     if (finished())
@@ -80,9 +91,6 @@ void Sudoku::setValue(unsigned int row, unsigned int col, int number)
         elimRow(row,number);
         elimCol(col,number);
         elimBlk(row,col,number);
-    } else {
-        for (int i=1; i<=9; ++i)
-            mVals.set(pos+i);
     }
 }
 
@@ -245,24 +253,147 @@ void Sudoku::elimBlk(unsigned int row, unsigned int col, int number)
 
 bool Sudoku::rowsToBlks()
 {
-    return false;
+    bool success = false;
+    for (unsigned row=0; row<9; ++row) {
+        for (unsigned nro=1; nro<=9; ++nro) {
+            unsigned rpos = 9*row+nro-1;
+            if (mRows.test(rpos))
+                continue;
+            unsigned pos = position(row,0)+nro;
+            unsigned colPos = 3;
+            for (unsigned col=0; col<9; ++col) {
+                if (mVals.test(pos)) {
+                    if (colPos==3) {
+                        colPos = col/3;
+                    } else {
+                        unsigned block = col/3;
+                        if (colPos!=block) {
+                            colPos = 3;
+                            break;
+                        }
+                    }
+                }
+                pos += 10;
+            }
+            if (colPos!=3) {
+                unsigned rowPos = row/3;
+                for (unsigned elimRow = 3*rowPos; elimRow<3*(rowPos+1); ++elimRow) {
+                    if (elimRow==row)
+                        continue;
+                    unsigned init = position(elimRow,3*colPos)+nro;
+                    for (pos=init; pos<init+30; pos+=10) {
+                        if (mVals.test(pos))
+                            success = true;
+                        mVals.reset(pos);
+                    }
+                }
+            }
+        }
+    }
+    return success;
 }
 
 bool Sudoku::colsToBlks()
 {
-    return false;
+    bool success = false;
+    for (unsigned col=0; col<9; ++col) {
+        for (unsigned nro=1; nro<=9; ++nro) {
+            unsigned cpos = 9*col+nro-1;
+            if (mCols.test(cpos))
+                continue;
+            unsigned pos = position(0,col)+nro;
+            unsigned rowPos = 3;
+            for (unsigned row=0; row<9; ++row) {
+                if (mVals.test(pos)) {
+                    if (rowPos==3) {
+                        rowPos = row/3;
+                    } else {
+                        unsigned block = row/3;
+                        if (rowPos!=block) {
+                            rowPos = 3;
+                            break;
+                        }
+                    }
+                }
+                pos += 90;
+            }
+            if (rowPos!=3) {
+                unsigned colPos = col/3;
+                for (unsigned elimCol = 3*colPos; elimCol<3*(colPos+1); ++elimCol) {
+                    if (elimCol==col)
+                        continue;
+                    unsigned init = position(3*rowPos,elimCol)+nro;
+                    for (pos=init; pos<init+270; pos+=90) {
+                        if (mVals.test(pos))
+                            success = true;
+                        mVals.reset(pos);
+                    }
+                }
+            }
+        }
+    }
+    return success;
 }
 
 // Checking: from blocks
 
-bool Sudoku::blksToRows()
+bool Sudoku::blksToRowsCols()
 {
-    return false;
-}
-
-bool Sudoku::blksToCols()
-{
-    return false;
+    bool success = false;
+    for (unsigned blkRow=0; blkRow<3; ++blkRow) {
+        for (unsigned blkCol=0; blkCol<3; ++blkCol) {
+            vector<unsigned> pos = blkRange(blkRow,blkCol);
+            for (unsigned nro=1; nro<=9; ++nro) {
+                unsigned bpos = 9*(3*blkRow+blkCol)+nro-1;
+                if (mBlks.test(bpos))
+                    continue;
+                unsigned rPos=3,cPos=3;
+                for (unsigned i=0; i<9; ++i) {
+                    if (mVals.test(pos[i]+nro)) {
+                        if (rPos==3) {
+                            rPos = i/3;
+                        } else {
+                            unsigned lRow = i/3;
+                            if (rPos!=lRow)
+                                rPos = 4;
+                        }
+                        if (cPos==3) {
+                            cPos = i%3;
+                        } else {
+                            unsigned lCol = i%3;
+                            if (cPos!=lCol)
+                                cPos = 4;
+                        }
+                    }
+                }
+                if (rPos<3) {
+                    unsigned row = rPos+3*blkRow;
+                    for (unsigned col=0; col<9; ++col) {
+                        unsigned colPos = col/3;
+                        if (colPos==blkCol)
+                            continue;
+                        unsigned pos = position(row,col)+nro;
+                        if (mVals.test(pos))
+                            success = true;
+                        mVals.reset(pos);
+                    }
+                }
+                if (cPos<3) {
+                    unsigned col = cPos+3*blkCol;
+                    for (unsigned row=0; row<9; ++row) {
+                        unsigned rowPos = row/3;
+                        if (rowPos==blkRow)
+                            continue;
+                        unsigned pos = position(row,col)+nro;
+                        if (mVals.test(pos))
+                            success = true;
+                        mVals.reset(pos);
+                    }
+                }
+            }
+        }
+    }
+    return success;
 }
 
 // Finalization
@@ -311,4 +442,26 @@ pair<unsigned int, unsigned int> Sudoku::pos2rowcol(unsigned int position)
     unsigned col = position/10;
     col = col%9;
     return std::make_pair(row,col);
+}
+
+unsigned int Sudoku::counter()
+{
+    unsigned count = 0;
+    unsigned pos = 0;
+    while (pos < 810) {
+        if (mVals.test(pos))
+            ++count;
+        pos += 10;
+    }
+    return count;
+}
+
+void Sudoku::possible(unsigned int row, unsigned int col)
+{
+    unsigned pos = position(row,col);
+    for (unsigned nro=1; nro<=9; ++nro) {
+        if (mVals.test(pos+nro))
+            cout << nro;
+    }
+    cout << endl;
 }

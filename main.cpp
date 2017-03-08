@@ -20,7 +20,7 @@ int main(void) {
         SudokuHandle handle;
         if (!handle.add("p096_sudoku.txt"))
             throw std::runtime_error("Input file functioning oddly!");
-        handle.loop(5);
+        handle.loop();
         return 0;
     } catch(exception &e) {
         cout << endl << endl << "An error occurred: " << e.what() << endl;

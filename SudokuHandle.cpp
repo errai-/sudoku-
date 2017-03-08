@@ -13,6 +13,7 @@ bool SudokuHandle::add(string file)
             if (!std::regex_match(line,header))
                 return false;
             Sudoku newSud(line);
+            newSud.init();
             // Loop over sudoku lines
             for (int i=0; i<9; ++i) {
                 getline(reading,line);
@@ -32,12 +33,15 @@ void SudokuHandle::loop(int limit)
 {
     unsigned iter = (limit < 0) ? mSudokus.size() : limit;
     cout << "Starting sudoku loop: " << iter << " iterations." << endl;
+    unsigned counter = 0;
     for (unsigned i = 0; i < iter; ++i) {
-        cout << "Sudoku: " << mSudokus[i].getName() << " status: ";
-        if (mSudokus[i].solve())
-            cout << "solved!" << endl;
-        else
-            cout << "unsolved. :(" << endl;
+        if (mSudokus[i].solve()) {
+            ++counter;
+            continue;
+        }
+        cout << "Sudoku: " << mSudokus[i].getName() << "unsolved. :(" << endl;
         mSudokus[i].print();
+        cout << mSudokus[i].counter() << endl;
     }
+    cout << "Total solved " << counter << endl;
 }
